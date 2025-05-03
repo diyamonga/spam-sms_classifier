@@ -5,25 +5,31 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
-# Download necessary NLTK resources
-nltk.download('punkt')
-nltk.download('stopwords')
+# Ensure NLTK resources are available
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt', quiet=True)
 
-# Initialize the Porter Stemmer
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords', quiet=True)
+
 ps = PorterStemmer()
 
 # Function to transform and preprocess the text
 def transform_text(text):
-    text = text.lower()  # Convert text to lowercase
-    text = nltk.word_tokenize(text)  # Tokenize text into words
+    text = text.lower()  # Convert to lowercase
+    text = nltk.word_tokenize(text)  # Tokenize into words
 
-    y = [i for i in text if i.isalnum()]  # Remove non-alphanumeric characters
+    y = [i for i in text if i.isalnum()]  # Keep alphanumeric
     text = y[:]
     y.clear()
 
     for i in text:
         if i not in stopwords.words('english') and i not in string.punctuation:
-            y.append(i)  # Remove stopwords and punctuation
+            y.append(i)
 
     text = y[:]
     y.clear()
@@ -40,80 +46,55 @@ with open('vectorizer.pkl', 'rb') as vectorizer_file:
 with open('model.pkl', 'rb') as model_file:
     model = pickle.load(model_file)
 
-# Set Streamlit app to dark theme in the config
-st.set_page_config(page_title="Spam SMS Classifier", page_icon="📱", layout="centered", initial_sidebar_state="expanded")
+# Streamlit page config
+st.set_page_config(page_title="Spam SMS Classifier", page_icon="📱", layout="centered")
 
-# Dark theme settings
+# Custom dark theme styles
 st.markdown("""
     <style>
-        body {
-            background-color: #2e2e2e;
-            color: white;
-        }
-        .stTextInput>div>div>input {
-            background-color: #3c3c3c;
-            color: white;
-        }
-        .stButton>button {
-            background-color: #4CAF50;
-            color: white;
-            font-weight: bold;
-            border-radius: 8px;
-        }
-        .stButton>button:hover {
-            background-color: #45a049;
-        }
-        .stHeader {
-            color: #f2f2f2;
-            font-size: 30px;
-            font-weight: 600;
-        }
+    body {
+        background-color: #2e2e2e;
+        color: white;
+    }
+    .stTextInput > div > div > input {
+        background-color: #3c3c3c;
+        color: white;
+    }
+    .stTextArea textarea {
+        background-color: #3c3c3c;
+        color: white;
+    }
+    .stButton>button {
+        background-color: #4CAF50;
+        color: white;
+        font-weight: bold;
+        border-radius: 8px;
+    }
+    .stButton>button:hover {
+        background-color: #45a049;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# Streamlit UI
-st.title("Spam/SMS Classifier 📱")
+# Title and input
+st.title("📱 SMS Spam Classifier")
+input_sms = st.text_area("Enter your message below:", height=150)
 
-# Input field for the user to enter the message
-input_sms = st.text_area("Enter your message below:", height=200)
-
-# Add some padding and text style
-st.markdown("""
-    <style>
-        .stTextArea {
-            margin-bottom: 20px;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
-# Prediction button
+# Predict button
 if st.button("Predict"):
-    # Preprocess the input text
+    # Preprocess
     transformed_sms = transform_text(input_sms)
 
-    # Vectorize the preprocessed text
+    # Vectorize
     vector_input = tfdif.transform([transformed_sms])
 
-    # Predict whether the message is spam or not
+    # Predict
     result = model.predict(vector_input)[0]
 
-    # Display the result
+    # Output
     if result == 1:
         st.header("🚨 Spam Detected!")
-        st.markdown("""
-            <p style="font-size:16px; color:red;">This message seems like spam. Be cautious!</p>
-        """, unsafe_allow_html=True)
+        st.markdown("<p style='color:red;'>This message seems like spam. Be cautious!</p>", unsafe_allow_html=True)
     else:
         st.header("✅ Not Spam")
-        st.markdown("""
-            <p style="font-size:16px; color:green;">This message is not spam.</p>
-        """, unsafe_allow_html=True)
-
-# Optional: Add some styling to the app
-st.markdown("""
-    <style>
-        .stButton>button {
-            font-size: 18px;
-        }
-    </style>
-""", unsafe_allow_html=True)
+        st.markdown("<p style='color:green;'>This message is not spam.</p>", unsafe_allow_html=True)
