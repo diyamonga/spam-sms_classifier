@@ -1,2 +1,14 @@
-# spam-sms_classifier
-A web-based machine learning application built with Streamlit that classifies SMS or email messages as Spam or Not Spam. This project uses Natural Language Processing (NLP) techniques and a Multinomial Naive Bayes classifier trained on labeled message data.
+# 📩 SMS/Email Spam Classifier
+
+A machine learning web app built using Python, Scikit-learn, and Streamlit to detect whether a given message is Spam or Not Spam.
+
+> *(Replace with your app screenshot)*
+
+---
+
+## 🚀 Features
+
+- Clean and dark-themed UI using Streamlit  
+- Preprocessing with stemming and stopword removal  
+- Model trained using MultinomialNB with TF-IDF vectorization  
+- Real-time prediction on user input  
